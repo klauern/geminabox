@@ -20,6 +20,7 @@ class Geminabox < Sinatra::Base
   get '/' do
     @gems = load_gems
     @index_gems = index_gems(@gems)
+    puts Geminabox.data
     erb :index
   end
   
@@ -35,7 +36,7 @@ class Geminabox < Sinatra::Base
   delete '/gems/*.gem' do
     File.delete file_path if File.exists? file_path
     reindex
-    redirect "/"
+    redirect env['SCRIPT_NAME'].to_s + '/'
   end
 
   post '/upload' do
@@ -54,10 +55,11 @@ class Geminabox < Sinatra::Base
       end
     end
     reindex
-    redirect "/"
+    redirect env['SCRIPT_NAME'].to_s + '/'
   end
 
 private
+
   def reindex
     Gem::Indexer.new(options.data).generate_index
   end
@@ -69,6 +71,7 @@ private
   def load_gems
     %w(specs prerelease_specs).inject(GemVersionCollection.new){|gems, specs_file_type|
       specs_file_path = File.join(options.data, "#{specs_file_type}.#{Gem.marshal_version}.gz")
+      puts "specs_file_path #{specs_file_path}"
       if File.exists?(specs_file_path)
         gems + Marshal.load(Gem.gunzip(Gem.read_binary(specs_file_path)))
       else
@@ -91,7 +94,7 @@ private
         url << ":#{request.port}"
       end
 
-      url << path
+      url << env['SCRIPT_NAME']
     end
   end
 end

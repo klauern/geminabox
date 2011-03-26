@@ -1,6 +1,7 @@
 require "rubygems"
 require "rake/gempackagetask"
 require "rake/rdoctask"
+require 'torquebox/rake/tasks'
 
 task :default => :package
 
